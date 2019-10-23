@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ChatApp</string>
+    <string name="button_new_account">Register Account</string>
+    <string name="text_welcome">Hello, Welcome !</string>
+</resources>

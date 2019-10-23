@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "197232537150",
+    "firebase_url": "https://testinggeofence-ff882.firebaseio.com",
+    "project_id": "testinggeofence-ff882",
+    "storage_bucket": "testinggeofence-ff882.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197232537150:android:93bd2bd2a5f827cd6b2b6f",
+        "android_client_info": {
+          "package_name": "com.example.chatapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "197232537150-5gk5uv7gdh4cc6n4rf4mj2ovdbra483t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chatapp",
+            "certificate_hash": "7fd63e42926b02721f673ae6caf604f34ced28b5"
+          }
+        },
+        {
+          "client_id": "197232537150-cc7se948i7v730oc2stfpgmctehprgga.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhXKgt6gUCrche_7tklwfhqS6z7zqyaHk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "197232537150-cc7se948i7v730oc2stfpgmctehprgga.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
