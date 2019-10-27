@@ -4,24 +4,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
     tools:context=".StartActivity">
+
+    <ImageView
+        android:id="@+id/imageChat"
+        android:src="@drawable/logo_chat"
+        android:layout_marginBottom="50dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_above="@+id/tvWelcome"
+        android:layout_centerHorizontal="true"/>
 
     <TextView
         android:id="@+id/tvWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text_welcome"
+        android:textColor="#fff"
         android:textSize="24sp"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
 
     <Button
+        android:id="@+id/btnLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/button_new_account"
+        android:layout_centerHorizontal="true"
+        android:background="#fff"
+        android:textColor="@color/colorPrimary"
+        android:text="@string/button_log_account"
+        android:layout_below="@+id/tvWelcome"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_marginTop="50dp"
+        />
+
+    <Button
+        android:id="@+id/btnRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_reg_account"
+        android:background="@color/colorAccent"
+        android:textColor="#fff"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:layout_below="@+id/tvWelcome"/>
+        android:layout_marginTop="30dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:layout_below="@+id/btnLogin"/>
+
+
 
 </RelativeLayout>
