@@ -1,5 +1,11 @@
 <resources>
-    <string name="app_name">ChatApp</string>
-    <string name="button_new_account">Register Account</string>
-    <string name="text_welcome">Hello, Welcome !</string>
+    <string name="app_name">Chatter</string>
+    <string name="button_reg_account">Register Account</string>
+    <string name="button_log_account">Login Account</string>
+    <string name="text_welcome">Hello, Welcome to Chatter !</string>
+    <string name="text_change_image">Change Image</string>
+    <string name="text_change_status">Change Status</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
