@@ -17,6 +17,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,6 +29,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private static final String TAG = "LoginActivity";
     private FirebaseAuth mAuth;
+    private DatabaseReference mUserDatabase;
     private Handler mHandler = new Handler();
     private int progressBarStatus = 0;
 
@@ -49,6 +54,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         setSupportActionBar(mToolBar);
         getSupportActionBar().setTitle("Login Account");
 
+        mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users");
+
         mAuth = FirebaseAuth.getInstance();
         buttonLogin.setOnClickListener(this);
     }
@@ -59,11 +66,30 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
-                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                    mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(mainIntent);
-                    finish();
-                    Toast.makeText(getApplicationContext(), "Welcome !", Toast.LENGTH_SHORT).show();
+
+                    String current_user_id = mAuth.getCurrentUser().getUid();
+                    FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                            if (task.isSuccessful()){
+                                mUserDatabase.child(current_user_id).child("device_token").setValue(task.getResult().getToken()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()){
+                                            Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                            startActivity(mainIntent);
+                                            finish();
+                                            Toast.makeText(getApplicationContext(), "Welcome !", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else
+                                            Toast.makeText(getApplicationContext(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+                        }
+                    });
+
                 }
                 else
                     Toast.makeText(getApplicationContext(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();

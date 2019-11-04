@@ -22,6 +22,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.HashMap;
 
@@ -108,24 +110,32 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                         if (task.isSuccessful()) {
                             FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
                             String uid = current_user.getUid();
-
-                            mDatabase = FirebaseDatabase.getInstance().getReference("Users").child(uid);
-                            HashMap<String, String> userMap = new HashMap<>();
-                            userMap.put("name", name);
-                            userMap.put("status", "Hi there I am using Chatter App.");
-                            userMap.put("image", "default");
-                            userMap.put("thumb_image", "default");
-
-                            mDatabase.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                                 @Override
-                                public void onComplete(@NonNull Task<Void> task) {
+                                public void onComplete(@NonNull Task<InstanceIdResult> task) {
                                     if (task.isSuccessful()){
-                                        Log.d(TAG, "createUserWithEmail:success");
-                                        Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                        startActivity(mainIntent);
-                                        Toast.makeText(getApplicationContext(), "Welcome " + name, Toast.LENGTH_SHORT).show();
-                                        finish();
+                                        mDatabase = FirebaseDatabase.getInstance().getReference("Users").child(uid);
+                                        String deviceToken = task.getResult().getToken();
+                                        HashMap<String, String> userMap = new HashMap<>();
+                                        userMap.put("name", name);
+                                        userMap.put("status", "Hi there I am using Chatter App.");
+                                        userMap.put("image", "default");
+                                        userMap.put("thumb_image", "default");
+                                        userMap.put("device_token", deviceToken);
+
+                                        mDatabase.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()){
+                                                    Log.d(TAG, "createUserWithEmail:success");
+                                                    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                                    mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                                    startActivity(mainIntent);
+                                                    Toast.makeText(getApplicationContext(), "Welcome " + name, Toast.LENGTH_SHORT).show();
+                                                    finish();
+                                                }
+                                            }
+                                        });
                                     }
                                 }
                             });

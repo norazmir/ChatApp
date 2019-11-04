@@ -13,9 +13,22 @@
         android:supportsRtl="true"
         android:name=".Application.Chatter"
         android:theme="@style/AppTheme">
+
+        <service
+            android:name=".MessageService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <activity android:name=".AllUserActivity"
             android:parentActivityName=".MainActivity"/>
-        <activity android:name=".ProfileActivity"/>
+        <activity android:name=".ProfileActivity">
+            <intent-filter>
+                <action android:name="com.example.chatapp_TARGET_INTENT"></action>
+                <category android:name="android.intent.category.DEFAULT"></category>
+            </intent-filter>
+        </activity>
         <activity
             android:name=".StatusActivity"
             android:parentActivityName=".SettingsActivity" />

@@ -22,10 +22,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,6 +38,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     private DatabaseReference mUserDatabase;
     private DatabaseReference mFriendRequestDatabase;
     private DatabaseReference mFriendDatabase;
+    private DatabaseReference mNotificationDatabase;
+    private DatabaseReference mRootRef;
+
     private FirebaseUser mCurrentUser;
     private String current_state;
 
@@ -48,6 +54,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     TextView profileTotalFriendsView;
     @BindView(R.id.btnFriendRequest)
     Button profileFriendRequest;
+    @BindView(R.id.btnDeclineRequest)
+    Button declineFriendRequest;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,13 +63,19 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
 
-        String user_id = getIntent().getStringExtra("user_id");
+        final String user_id = getIntent().getStringExtra("user_id");
+
+        mRootRef = FirebaseDatabase.getInstance().getReference();
+
         mUserDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(user_id);
         mFriendRequestDatabase = FirebaseDatabase.getInstance().getReference().child("Friend_req");
         mFriendDatabase = FirebaseDatabase.getInstance().getReference().child("Friends");
+        mNotificationDatabase = FirebaseDatabase.getInstance().getReference().child("Notifications");
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         current_state = "not_friends";
+        declineFriendRequest.setVisibility(View.INVISIBLE);
+        declineFriendRequest.setEnabled(false);
 
         profileFriendRequest.setOnClickListener(this);
         mUserDatabase.addValueEventListener(new ValueEventListener() {
@@ -84,10 +98,16 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                             if (req_type.equals("received")){
                                 current_state = "req_received";
                                 profileFriendRequest.setText("Accept Friend Request");
+
+                                declineFriendRequest.setVisibility(View.VISIBLE);
+                                declineFriendRequest.setEnabled(true);
                             }
                             else if (req_type.equals("sent")){
                                 current_state = "req_sent";
                                 profileFriendRequest.setText("Cancel Friend Request");
+
+                                declineFriendRequest.setVisibility(View.INVISIBLE);
+                                declineFriendRequest.setEnabled(false);
                             }
                         }
                         else {
@@ -97,6 +117,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                     if (dataSnapshot.hasChild(user_id)){
                                         current_state = "friends";
                                         profileFriendRequest.setText("Unfriend this person");
+
+                                        declineFriendRequest.setVisibility(View.INVISIBLE);
+                                        declineFriendRequest.setEnabled(false);
                                     }
                                 }
 
@@ -126,25 +149,31 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     public void onClick(View view) {
 
         profileFriendRequest.setEnabled(false);
+        //not friends state
         String user_id = getIntent().getStringExtra("user_id");
         if (current_state.equals("not_friends")){
-            mFriendRequestDatabase.child(mCurrentUser.getUid()).child(user_id).child("request_type").setValue("sent")
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+
+            DatabaseReference newNotification = mRootRef.child("Notifications").child(user_id).push();
+            String newNotificationId = newNotification.getKey();
+
+            HashMap<String, String> notificationData = new HashMap<>();
+            notificationData.put("from", mCurrentUser.getUid());
+            notificationData.put("type", "request");
+
+            Map requestMap = new HashMap();
+            requestMap.put("Friend_req/" + mCurrentUser.getUid() + "/" + user_id + "/request_type", "sent");
+            requestMap.put("Friend_req/" + user_id + "/" + mCurrentUser.getUid() + "/request_type", "received");
+            requestMap.put("Notifications/" + user_id + "/" + newNotificationId, notificationData);
+
+            mRootRef.updateChildren(requestMap, new DatabaseReference.CompletionListener() {
                 @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()){
-                        mFriendRequestDatabase.child(user_id).child(mCurrentUser.getUid()).child("request_type").setValue("received")
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                profileFriendRequest.setEnabled(true);
-                                current_state = "req_sent";
-                                profileFriendRequest.setText("Cancel Friend Request");
-                                Toast.makeText(getApplicationContext(),"Request Sent.", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }else
-                        Toast.makeText(getApplicationContext(),"Failed Sending Request.", Toast.LENGTH_SHORT).show();
+                public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+                    if (databaseError != null){
+                        Toast.makeText(getApplicationContext(), "There was some error sending request.", Toast.LENGTH_SHORT).show();
+                    }
+                    profileFriendRequest.setEnabled(true);
+                    current_state = "req_sent";
+                    profileFriendRequest.setText("Cancel Friend Request");
                 }
             });
         }
@@ -161,6 +190,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                 profileFriendRequest.setEnabled(true);
                                 current_state = "not_friends";
                                 profileFriendRequest.setText("Sent Friend Request");
+                                declineFriendRequest.setVisibility(View.INVISIBLE);
+                                declineFriendRequest.setEnabled(false);
                                 Toast.makeText(getApplicationContext(),"Friend Request Cancelled.", Toast.LENGTH_SHORT).show();
                             }
 
@@ -191,6 +222,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                                 profileFriendRequest.setEnabled(true);
                                                 current_state = "friends";
                                                 profileFriendRequest.setText("Unfriend this person");
+                                                declineFriendRequest.setVisibility(View.INVISIBLE);
+                                                declineFriendRequest.setEnabled(false);
                                                 Toast.makeText(getApplicationContext(), "Added Friend.", Toast.LENGTH_SHORT).show();
                                             }
                                         }
